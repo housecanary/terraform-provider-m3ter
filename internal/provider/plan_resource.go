@@ -82,6 +82,9 @@ func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 			"plan_template_id": schema.StringAttribute{
 				MarkdownDescription: "The plan ID that this plan belongs to",
 				Required:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"standing_charge": schema.Float64Attribute{
 				MarkdownDescription: "The standing charge of the plan",

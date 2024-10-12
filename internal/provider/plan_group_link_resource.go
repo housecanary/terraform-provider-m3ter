@@ -53,10 +53,16 @@ func (r *PlanGroupLinkResource) Schema(ctx context.Context, req resource.SchemaR
 			"plan_group_id": schema.StringAttribute{
 				MarkdownDescription: "PlanGroupLink plan group identifier",
 				Required:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"plan_id": schema.StringAttribute{
 				MarkdownDescription: "PlanGroupLink plan identifier",
 				Required:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"id": schema.StringAttribute{
 				Computed:            true,
