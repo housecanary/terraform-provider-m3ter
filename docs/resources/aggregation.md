@@ -18,7 +18,6 @@ Scheduled event configuration resource
 ### Required
 
 - `aggregation` (String) Specifies the computation method applied to usage data collected in targetField.
-- `code` (String) Code of the new Aggregation. A unique short code to identify the Aggregation.
 - `custom_fields` (Dynamic) User defined fields enabling you to attach custom data. The value for a custom field can be either a string or a number.
 - `meter_id` (String) The UUID of the Meter used as the source of usage data for the Aggregation.
 - `name` (String) Descriptive name for the Aggregation.
@@ -29,6 +28,7 @@ Scheduled event configuration resource
 
 ### Optional
 
+- `code` (String) Code of the new Aggregation. A unique short code to identify the Aggregation.
 - `default_value` (Number) Aggregation value used when no usage data is available to be aggregated.
 - `segmented_fields` (List of String) Used when creating a segmented Aggregation, which segments the usage data collected by a single Meter. Works together with segments.
 - `segments` (List of Map of String) Used when creating a segmented Aggregation, which segments the usage data collected by a single Meter. Works together with segmentedFields.
