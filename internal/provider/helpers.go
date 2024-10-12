@@ -172,6 +172,9 @@ func (m *mapper) customFieldsFrom(source types.Dynamic) {
 					return v.ValueInt32()
 				case types.Int64:
 					return v.ValueInt64()
+				case types.Number:
+					f, _ := v.ValueBigFloat().Float64()
+					return f
 				case types.Dynamic:
 					return convertMapValue(v.UnderlyingValue())
 				default:
