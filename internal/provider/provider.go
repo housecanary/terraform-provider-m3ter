@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
+	"golang.org/x/time/rate"
 )
 
 // Ensure M3terProvider satisfies various provider interfaces.
@@ -159,6 +160,7 @@ func (p *M3terProvider) Configure(ctx context.Context, req provider.ConfigureReq
 	client := &m3terClient{
 		organizationID: organizationID,
 		client:         cnf.Client(context.Background()),
+		limit:          rate.NewLimiter(rate.Limit(10), 1),
 	}
 	resp.DataSourceData = client
 	resp.ResourceData = client
@@ -171,11 +173,21 @@ func (p *M3terProvider) Resources(ctx context.Context) []func() resource.Resourc
 		NewScheduledEventConfigurationResource,
 		NewWebhookDestinationResource,
 		NewOrganizationConfigResource,
+		NewProductResource,
+		NewPricingResource,
+		NewPlanTemplateResource,
+		NewPlanResource,
+		NewPlanGroupResource,
+		NewPlanGroupLinkResource,
+		NewAggregationResource,
 	}
 }
 
 func (p *M3terProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		NewProductDataSource,
+		NewAggregationDataSource,
+	}
 }
 
 func (p *M3terProvider) Functions(ctx context.Context) []func() function.Function {

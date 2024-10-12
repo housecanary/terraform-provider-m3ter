@@ -11,14 +11,21 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+
+	"golang.org/x/time/rate"
 )
 
 type m3terClient struct {
 	organizationID string
 	client         *http.Client
+	limit          *rate.Limiter
 }
 
 func (c *m3terClient) execute(ctx context.Context, method string, path string, query url.Values, requestBody any, responseBody any) error {
+	err := c.limit.Wait(ctx)
+	if err != nil {
+		return err
+	}
 	fullURL := "https://api.m3ter.com/organizations/" + url.PathEscape(c.organizationID) + path
 	if query != nil {
 		fullURL += "?" + query.Encode()

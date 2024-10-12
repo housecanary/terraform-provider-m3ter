@@ -6,7 +6,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"net/url"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -40,6 +39,10 @@ type ScheduledEventConfigurationResourceModel struct {
 	Offset  types.Int32  `tfsdk:"offset"`
 	Id      types.String `tfsdk:"id"`
 	Version types.Int64  `tfsdk:"version"`
+}
+
+func (r *ScheduledEventConfigurationResourceModel) GetId() types.String {
+	return r.Id
 }
 
 func (r *ScheduledEventConfigurationResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -106,88 +109,19 @@ func (r *ScheduledEventConfigurationResource) Configure(ctx context.Context, req
 }
 
 func (r *ScheduledEventConfigurationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data ScheduledEventConfigurationResourceModel
-
-	// Read Terraform plan data into the model
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	restData := make(map[string]any)
-	r.write(ctx, &data, restData, &resp.Diagnostics)
-
-	var updatedRestData map[string]any
-	err := r.client.execute(ctx, "POST", "/scheduledevents/configurations", nil, restData, &updatedRestData)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create scheduled event configuration, got error: %s", err))
-		return
-	}
-
-	r.read(ctx, &data, updatedRestData, &resp.Diagnostics)
-
-	// Save updated data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	genericCreate(ctx, req, resp, r.client, "/scheduledevents/configurations", "scheduled event configuration", r.read, r.write)
 }
 
 func (r *ScheduledEventConfigurationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data ScheduledEventConfigurationResourceModel
-
-	// Read Terraform prior state data into the model
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	var restData map[string]any
-	err := r.client.execute(ctx, "GET", "/scheduledevents/configurations/"+url.PathEscape(data.Id.ValueString()), nil, nil, &restData)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read example, got error: %s", err))
-		return
-	}
-
-	r.read(ctx, &data, restData, &resp.Diagnostics)
-
-	// Save updated data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	genericRead(ctx, req, resp, r.client, "/scheduledevents/configurations", "scheduled event configuration", r.read)
 }
 
 func (r *ScheduledEventConfigurationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data ScheduledEventConfigurationResourceModel
-
-	// Read Terraform plan data into the model
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	restData := make(map[string]any)
-	r.write(ctx, &data, restData, &resp.Diagnostics)
-
-	var updatedRestData map[string]any
-	err := r.client.execute(ctx, "PUT", "/scheduledevents/configurations/"+url.PathEscape(data.Id.ValueString()), nil, restData, &updatedRestData)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create scheduled event configuration, got error: %s", err))
-	}
-
-	r.read(ctx, &data, updatedRestData, &resp.Diagnostics)
-
-	// Save updated data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	genericUpdate(ctx, req, resp, r.client, "/scheduledevents/configurations", "scheduled event configuration", r.read, r.write)
 }
 
 func (r *ScheduledEventConfigurationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data ScheduledEventConfigurationResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	err := r.client.execute(ctx, "DELETE", "/scheduledevents/configurations/"+url.PathEscape(data.Id.ValueString()), nil, nil, nil)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete scheduled event configuration, got error: %s", err))
-	}
+	genericDelete[ScheduledEventConfigurationResourceModel](ctx, req, resp, r.client, "/scheduledevents/configurations", "scheduled event configuration")
 }
 
 func (r *ScheduledEventConfigurationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

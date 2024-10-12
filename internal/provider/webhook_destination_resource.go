@@ -6,7 +6,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"net/url"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -43,6 +42,10 @@ type WebhookDestinationResourceModel struct {
 	Credentials types.Object `tfsdk:"credentials"`
 	Id          types.String `tfsdk:"id"`
 	Version     types.Int64  `tfsdk:"version"`
+}
+
+func (r *WebhookDestinationResourceModel) GetId() types.String {
+	return r.Id
 }
 
 var credentialsAttributes = map[string]schema.Attribute{
@@ -143,105 +146,19 @@ func (r *WebhookDestinationResource) Configure(ctx context.Context, req resource
 }
 
 func (r *WebhookDestinationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data WebhookDestinationResourceModel
-
-	// Read Terraform plan data into the model
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	webhookData := make(map[string]any)
-	r.write(ctx, &data, webhookData, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	var updatedWebhookData map[string]any
-	err := r.client.execute(ctx, "POST", "/integrationdestinations/webhooks", nil, webhookData, &updatedWebhookData)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create webhook destination, got error: %s", err))
-	}
-
-	r.read(ctx, &data, updatedWebhookData, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Save updated data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	genericCreate(ctx, req, resp, r.client, "/integrationdestinations/webhooks", "webhook", r.read, r.write)
 }
 
 func (r *WebhookDestinationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data WebhookDestinationResourceModel
-
-	// Read Terraform prior state data into the model
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	var webhookData map[string]any
-	err := r.client.execute(ctx, "GET", "/integrationdestinations/webhooks/"+url.PathEscape(data.Id.ValueString()), nil, nil, &webhookData)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read webhook destination, got error: %s", err))
-		return
-	}
-
-	r.read(ctx, &data, webhookData, &resp.Diagnostics)
-
-	// Save updated data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	genericRead(ctx, req, resp, r.client, "/integrationdestinations/webhooks", "webhook", r.read)
 }
 
 func (r *WebhookDestinationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data WebhookDestinationResourceModel
-
-	// Read Terraform plan data into the model
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	var webhookData map[string]any
-	err := r.client.execute(ctx, "GET", "/integrationdestinations/webhooks/"+url.PathEscape(data.Id.ValueString()), nil, nil, &webhookData)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read webhook destination, got error: %s", err))
-		return
-	}
-
-	r.write(ctx, &data, webhookData, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	var updatedWebhookData map[string]any
-	err = r.client.execute(ctx, "PUT", "/integrationdestinations/webhooks/"+url.PathEscape(data.Id.ValueString()), nil, webhookData, &updatedWebhookData)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update webhook destination, got error: %s", err))
-	}
-
-	r.read(ctx, &data, updatedWebhookData, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Save updated data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	genericUpdate(ctx, req, resp, r.client, "/integrationdestinations/webhooks", "webhook", r.read, r.write)
 }
 
 func (r *WebhookDestinationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data WebhookDestinationResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	err := r.client.execute(ctx, "DELETE", "/integrationdestinations/webhooks/"+url.PathEscape(data.Id.ValueString()), nil, nil, nil)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete webhook destination, got error: %s", err))
-	}
+	genericDelete[WebhookDestinationResourceModel](ctx, req, resp, r.client, "/integrationdestinations/webhooks", "webhook")
 }
 
 func (r *WebhookDestinationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

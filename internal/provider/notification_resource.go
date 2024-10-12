@@ -6,7 +6,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"net/url"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -44,6 +43,10 @@ type NotificationResourceModel struct {
 	EventName       types.String `tfsdk:"event_name"`
 	Id              types.String `tfsdk:"id"`
 	Version         types.Int64  `tfsdk:"version"`
+}
+
+func (r *NotificationResourceModel) GetId() types.String {
+	return r.Id
 }
 
 func (r *NotificationResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -139,99 +142,19 @@ func (r *NotificationResource) Configure(ctx context.Context, req resource.Confi
 }
 
 func (r *NotificationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data NotificationResourceModel
-
-	// Read Terraform plan data into the model
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	restData := make(map[string]any)
-	r.write(ctx, &data, restData, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	var updatedRestData map[string]any
-	err := r.client.execute(ctx, "POST", "/notifications/configurations", nil, restData, &updatedRestData)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create notification, got error: %s", err))
-	}
-
-	r.read(ctx, &data, updatedRestData, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Save updated data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	genericCreate(ctx, req, resp, r.client, "/notifications/configurations", "notification", r.read, r.write)
 }
 
 func (r *NotificationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data NotificationResourceModel
-
-	// Read Terraform prior state data into the model
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	var restData map[string]any
-	err := r.client.execute(ctx, "GET", "/notifications/configurations/"+url.PathEscape(data.Id.ValueString()), nil, nil, &restData)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read notification, got error: %s", err))
-		return
-	}
-
-	r.read(ctx, &data, restData, &resp.Diagnostics)
-
-	// Save updated data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	genericRead(ctx, req, resp, r.client, "/notifications/configurations", "notification", r.read)
 }
 
 func (r *NotificationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data NotificationResourceModel
-
-	// Read Terraform plan data into the model
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	restData := make(map[string]any)
-	r.write(ctx, &data, restData, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	var newRestData map[string]any
-	err := r.client.execute(ctx, "PUT", "/notifications/configurations/"+url.PathEscape(data.Id.ValueString()), nil, restData, &newRestData)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update notification, got error: %s", err))
-	}
-
-	r.read(ctx, &data, newRestData, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Save updated data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	genericUpdate(ctx, req, resp, r.client, "/notifications/configurations", "notification", r.read, r.write)
 }
 
 func (r *NotificationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data NotificationResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	err := r.client.execute(ctx, "DELETE", "/notifications/configurations/"+url.PathEscape(data.Id.ValueString()), nil, nil, nil)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete notification, got error: %s", err))
-	}
+	genericDelete[NotificationResourceModel](ctx, req, resp, r.client, "/notifications/configurations", "notification")
 }
 
 func (r *NotificationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

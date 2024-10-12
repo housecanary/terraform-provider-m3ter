@@ -7,7 +7,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/url"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -45,6 +44,10 @@ type IntegrationConfigurationResourceModel struct {
 	IntegrationCredentialsId types.String `tfsdk:"integration_credentials_id"`
 	Id                       types.String `tfsdk:"id"`
 	Version                  types.Int64  `tfsdk:"version"`
+}
+
+func (r *IntegrationConfigurationResourceModel) GetId() types.String {
+	return r.Id
 }
 
 func (r *IntegrationConfigurationResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -129,99 +132,19 @@ func (r *IntegrationConfigurationResource) Configure(ctx context.Context, req re
 }
 
 func (r *IntegrationConfigurationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data IntegrationConfigurationResourceModel
-
-	// Read Terraform plan data into the model
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	restData := make(map[string]any)
-	r.write(ctx, &data, restData, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	var restWebhookData map[string]any
-	err := r.client.execute(ctx, "POST", "/integrationconfigs", nil, restData, &restWebhookData)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create Integration Configuration, got error: %s", err))
-	}
-
-	r.read(ctx, &data, restWebhookData, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Save updated data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	genericCreate(ctx, req, resp, r.client, "/integrationconfigs", "integration configuration", r.read, r.write)
 }
 
 func (r *IntegrationConfigurationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data IntegrationConfigurationResourceModel
-
-	// Read Terraform prior state data into the model
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	var restData map[string]any
-	err := r.client.execute(ctx, "GET", "/integrationconfigs/"+url.PathEscape(data.Id.ValueString()), nil, nil, &restData)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read Integration Configuration, got error: %s", err))
-		return
-	}
-
-	r.read(ctx, &data, restData, &resp.Diagnostics)
-
-	// Save updated data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	genericRead(ctx, req, resp, r.client, "/integrationconfigs", "integration configuration", r.read)
 }
 
 func (r *IntegrationConfigurationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data IntegrationConfigurationResourceModel
-
-	// Read Terraform plan data into the model
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	restData := make(map[string]any)
-	r.write(ctx, &data, restData, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	var updatedRestData map[string]any
-	err := r.client.execute(ctx, "PUT", "/integrationconfigs/"+url.PathEscape(data.Id.ValueString()), nil, restData, &updatedRestData)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update Integration Configuration, got error: %s", err))
-	}
-
-	r.read(ctx, &data, updatedRestData, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Save updated data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	genericUpdate(ctx, req, resp, r.client, "/integrationconfigs", "integration configuration", r.read, r.write)
 }
 
 func (r *IntegrationConfigurationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data IntegrationConfigurationResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	err := r.client.execute(ctx, "DELETE", "/integrationconfigs/"+url.PathEscape(data.Id.ValueString()), nil, nil, nil)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete Integration Configuration, got error: %s", err))
-	}
+	genericDelete[IntegrationConfigurationResourceModel](ctx, req, resp, r.client, "/integrationconfigs", "integration configuration")
 }
 
 func (r *IntegrationConfigurationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
