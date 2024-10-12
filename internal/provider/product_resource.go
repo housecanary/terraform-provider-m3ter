@@ -6,6 +6,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -54,33 +55,34 @@ func (r *ProductResource) Schema(ctx context.Context, req resource.SchemaRequest
 
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
-				MarkdownDescription: "Name of the product",
+				MarkdownDescription: "Descriptive name for the Product providing context and information.",
 				Required:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthBetween(1, 200),
 				},
 			},
 			"code": schema.StringAttribute{
-				MarkdownDescription: "The short code for the Product.",
+				MarkdownDescription: "A unique short code to identify the Product. It should not contain control chracters or spaces.",
 				Required:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthBetween(1, 80),
+					stringvalidator.RegexMatches(regexp.MustCompile(`^([^\p{Cc}\s])|([^\p{Cc}\s][[^\p{Cc}\s] ]*[^\p{Cc}\s])$`), "The code must not contain control characters or start/end with whitespace."),
 				},
 			},
 			"custom_fields": schema.DynamicAttribute{
-				MarkdownDescription: "The name of the Event that triggers the Product.",
+				MarkdownDescription: "User defined fields enabling you to attach custom data. The value for a custom field can be either a string or a number.",
 				Optional:            true,
 			},
 			"id": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "Product identifier",
+				MarkdownDescription: "The UUID of the entity.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"version": schema.Int64Attribute{
 				Computed:            true,
-				MarkdownDescription: "Product version",
+				MarkdownDescription: "The version number",
 			},
 		},
 	}

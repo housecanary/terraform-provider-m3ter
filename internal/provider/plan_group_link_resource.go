@@ -51,14 +51,14 @@ func (r *PlanGroupLinkResource) Schema(ctx context.Context, req resource.SchemaR
 
 		Attributes: map[string]schema.Attribute{
 			"plan_group_id": schema.StringAttribute{
-				MarkdownDescription: "PlanGroupLink plan group identifier",
+				MarkdownDescription: "Plan group identifier",
 				Required:            true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"plan_id": schema.StringAttribute{
-				MarkdownDescription: "PlanGroupLink plan identifier",
+				MarkdownDescription: "Plan identifier",
 				Required:            true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -66,14 +66,14 @@ func (r *PlanGroupLinkResource) Schema(ctx context.Context, req resource.SchemaR
 			},
 			"id": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "PlanGroupLink identifier",
+				MarkdownDescription: "The UUID of the entity.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"version": schema.Int64Attribute{
 				Computed:            true,
-				MarkdownDescription: "PlanGroupLink version",
+				MarkdownDescription: "The version number of the entity.",
 			},
 		},
 	}

@@ -6,6 +6,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -93,25 +94,26 @@ func (r *PricingResource) Schema(ctx context.Context, req resource.SchemaRequest
 
 		Attributes: map[string]schema.Attribute{
 			"description": schema.StringAttribute{
-				MarkdownDescription: "Description of the pricing",
+				MarkdownDescription: "Displayed on Bill line items.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(200),
 				},
 			},
 			"code": schema.StringAttribute{
-				MarkdownDescription: "The short code for the Pricing.",
+				MarkdownDescription: "Unique short code for the Pricing.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthBetween(1, 80),
+					stringvalidator.RegexMatches(regexp.MustCompile(`^([^\p{Cc}\s])|([^\p{Cc}\s][[^\p{Cc}\s] ]*[^\p{Cc}\s])$`), "The code must not contain control characters or start/end with whitespace."),
 				},
 			},
 			"aggregation_id": schema.StringAttribute{
-				MarkdownDescription: "The aggregation ID for the pricing.",
+				MarkdownDescription: "UUID of the Aggregation used to create the Pricing. Use this when creating a Pricing for a segmented aggregation.",
 				Optional:            true,
 			},
 			"compound_aggregation_id": schema.StringAttribute{
-				MarkdownDescription: "The compound aggregation ID for the pricing.",
+				MarkdownDescription: "UUID of the Compound Aggregation used to create the Pricing.",
 				Optional:            true,
 			},
 			"type": schema.StringAttribute{
@@ -123,57 +125,57 @@ func (r *PricingResource) Schema(ctx context.Context, req resource.SchemaRequest
 				},
 			},
 			"segment": schema.MapAttribute{
-				MarkdownDescription: "The segment of the pricing.",
+				MarkdownDescription: "Specifies the segment value which you are defining a Pricing for using this call.",
 				Optional:            true,
 				ElementType:         types.StringType,
 			},
 			"tiers_span_plan": schema.BoolAttribute{
-				MarkdownDescription: "Boolean flag that sets the tiers span plan.",
+				MarkdownDescription: "If TRUE, usage accumulates over the entire period the priced Plan is active for the account, and is not reset for pricing band rates at the start of each billing period.\n\nIf FALSE, usage does not accumulate, and is reset for pricing bands at the start of each billing period.",
 				Optional:            true,
 				Computed:            true,
 			},
 			"minimum_spend": schema.Float64Attribute{
-				MarkdownDescription: "The minimum spend of the pricing.",
+				MarkdownDescription: "The minimum spend amount per billing cycle for end customer Accounts on a Plan to which the Pricing is applied.",
 				Optional:            true,
 				Validators: []validator.Float64{
 					float64validator.AtLeast(0),
 				},
 			},
 			"minimum_spend_description": schema.StringAttribute{
-				MarkdownDescription: "The minimum spend description of the pricing.",
+				MarkdownDescription: "Minimum spend description (displayed on the bill line item).",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(200),
 				},
 			},
 			"minimum_spend_bill_in_advance": schema.BoolAttribute{
-				MarkdownDescription: "Boolean flag that sets the minimum spend bill in advance.",
+				MarkdownDescription: "When TRUE, minimum spend is billed at the start of each billing period.\n\nWhen FALSE, minimum spend is billed at the end of each billing period.",
 				Optional:            true,
 			},
 			"overage_pricing_bands": schema.ListNestedAttribute{
-				MarkdownDescription: "The overage pricing bands of the pricing.",
+				MarkdownDescription: "Specify Prepayment/Balance overage pricing in pricing bands for the case of a Tiered pricing structure.",
 				Optional:            true,
 				NestedObject:        pricingBandNestedObject,
 			},
 			"plan_id": schema.StringAttribute{
-				MarkdownDescription: "The plan ID of the pricing.",
+				MarkdownDescription: "UUID of the Plan the Pricing is created for.",
 				Optional:            true,
 			},
 			"plan_template_id": schema.StringAttribute{
-				MarkdownDescription: "The plan template ID of the pricing.",
+				MarkdownDescription: "UUID of the Plan Template the Pricing is created for.",
 				Optional:            true,
 			},
 			"cumulative": schema.BoolAttribute{
-				MarkdownDescription: "Boolean flag that sets the pricing as cumulative.",
+				MarkdownDescription: "Controls whether or not charge rates under a set of pricing bands configured for a Pricing are applied according to each separate band or at the highest band reached.",
 				Optional:            true,
 				Computed:            true,
 			},
 			"start_date": schema.StringAttribute{
-				MarkdownDescription: "The start date of the pricing.",
+				MarkdownDescription: "The start date (in ISO-8601 format) for when the Pricing starts to be active for the Plan of Plan Template.",
 				Required:            true,
 			},
 			"end_date": schema.StringAttribute{
-				MarkdownDescription: "The end date of the pricing.",
+				MarkdownDescription: "The end date (in ISO-8601 format) for when the Pricing ceases to be active for the Plan or Plan Template.",
 				Optional:            true,
 			},
 			"pricing_bands": schema.ListNestedAttribute{
@@ -183,14 +185,14 @@ func (r *PricingResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"id": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "Pricing identifier",
+				MarkdownDescription: "The UUID of the entity.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"version": schema.Int64Attribute{
 				Computed:            true,
-				MarkdownDescription: "Pricing version",
+				MarkdownDescription: "The version number.",
 			},
 		},
 	}

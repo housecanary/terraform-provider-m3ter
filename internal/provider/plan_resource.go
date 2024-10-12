@@ -6,6 +6,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -62,76 +63,77 @@ func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
-				MarkdownDescription: "Name of the plan",
+				MarkdownDescription: "Descriptive name for the Plan.",
 				Required:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthBetween(1, 200),
 				},
 			},
 			"code": schema.StringAttribute{
-				MarkdownDescription: "The short code for the Plan.",
+				MarkdownDescription: "Unique short code reference for the Plan.",
 				Required:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthBetween(1, 80),
+					stringvalidator.RegexMatches(regexp.MustCompile(`^([^\p{Cc}\s])|([^\p{Cc}\s][[^\p{Cc}\s] ]*[^\p{Cc}\s])$`), "The code must not contain control characters or start/end with whitespace."),
 				},
 			},
 			"custom_fields": schema.DynamicAttribute{
-				MarkdownDescription: "The name of the Event that triggers the Plan.",
-				Optional:            true,
+				MarkdownDescription: "User defined fields enabling you to attach custom data. The value for a custom field can be either a string or a number.",
+				Required:            true,
 			},
 			"plan_template_id": schema.StringAttribute{
-				MarkdownDescription: "The plan ID that this plan belongs to",
+				MarkdownDescription: "UUID of the PlanTemplate the Plan belongs to.",
 				Required:            true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"standing_charge": schema.Float64Attribute{
-				MarkdownDescription: "The standing charge of the plan",
+				MarkdownDescription: "The standing charge applied to bills for end customers. This is prorated.",
 				Optional:            true,
 				Validators: []validator.Float64{
 					float64validator.AtLeast(0),
 				},
 			},
 			"standing_charge_description": schema.StringAttribute{
-				MarkdownDescription: "The standing charge description of the plan",
+				MarkdownDescription: "Standing charge description (displayed on the bill line item).",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(200),
 				},
 			},
 			"minimum_spend": schema.Float64Attribute{
-				MarkdownDescription: "The minimum spend of the plan",
+				MarkdownDescription: "The product minimum spend amount per billing cycle for end customer Accounts on a priced Plan.",
 				Optional:            true,
 				Validators: []validator.Float64{
 					float64validator.AtLeast(0),
 				},
 			},
 			"minimum_spend_description": schema.StringAttribute{
-				MarkdownDescription: "The minimum spend description of the plan",
+				MarkdownDescription: "Minimum spend description (displayed on the bill line item).",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(200),
 				},
 			},
 			"standing_charge_bill_in_advance": schema.BoolAttribute{
-				MarkdownDescription: "Boolean flag that sets the Standing Charge as a bill in advance.",
+				MarkdownDescription: "When TRUE, standing charge is billed at the start of each billing period.\n\nWhen FALSE, standing charge is billed at the end of each billing period.",
 				Optional:            true,
 			},
 			"minimum_spend_bill_in_advance": schema.BoolAttribute{
-				MarkdownDescription: "Boolean flag that sets the Minimum Spend as a bill in advance.",
+				MarkdownDescription: "When TRUE, minimum spend is billed at the start of each billing period.\n\nWhen FALSE, minimum spend is billed at the end of each billing period.",
 				Optional:            true,
 			},
 			"id": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "Plan identifier",
+				MarkdownDescription: "The UUID of the entity.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"version": schema.Int64Attribute{
 				Computed:            true,
-				MarkdownDescription: "Plan version",
+				MarkdownDescription: "The version number.",
 			},
 		},
 	}

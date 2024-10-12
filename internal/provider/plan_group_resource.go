@@ -6,6 +6,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -64,85 +65,86 @@ func (r *PlanGroupResource) Schema(ctx context.Context, req resource.SchemaReque
 
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
-				MarkdownDescription: "Name of the plan group",
+				MarkdownDescription: "The name of the PlanGroup.",
 				Required:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthBetween(1, 200),
 				},
 			},
 			"code": schema.StringAttribute{
-				MarkdownDescription: "The short code for the PlanGroup.",
-				Required:            true,
+				MarkdownDescription: "The short code representing the PlanGroup.",
+				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthBetween(1, 80),
+					stringvalidator.RegexMatches(regexp.MustCompile(`^([^\p{Cc}\s])|([^\p{Cc}\s][[^\p{Cc}\s] ]*[^\p{Cc}\s])$`), "The code must not contain control characters or start/end with whitespace."),
 				},
 			},
 			"custom_fields": schema.DynamicAttribute{
-				MarkdownDescription: "Custom fields for the plan group",
-				Optional:            true,
+				MarkdownDescription: "User defined fields enabling you to attach custom data. The value for a custom field can be either a string or a number.",
+				Required:            true,
 			},
 
 			"currency": schema.StringAttribute{
-				MarkdownDescription: "The currency of the plan group",
+				MarkdownDescription: "Currency code for the PlanGroup (For example, USD).",
 				Required:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthBetween(3, 3),
 				},
 			},
 			"standing_charge": schema.Float64Attribute{
-				MarkdownDescription: "The standing charge of the plan group",
-				Required:            true,
+				MarkdownDescription: "Standing charge amount for the PlanGroup.",
+				Optional:            true,
 				Validators: []validator.Float64{
 					float64validator.AtLeast(0),
 				},
 			},
 			"standing_charge_description": schema.StringAttribute{
-				MarkdownDescription: "The standing charge description of the plan group",
+				MarkdownDescription: "Description of the standing charge, displayed on the bill line item.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(200),
 				},
 			},
 			"minimum_spend": schema.Float64Attribute{
-				MarkdownDescription: "The minimum spend of the plan group",
+				MarkdownDescription: "The minimum spend amount for the PlanGroup.",
 				Optional:            true,
 				Validators: []validator.Float64{
 					float64validator.AtLeast(0),
 				},
 			},
 			"minimum_spend_description": schema.StringAttribute{
-				MarkdownDescription: "The minimum spend description of the plan group",
+				MarkdownDescription: "Description of the minimum spend, displayed on the bill line item.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(200),
 				},
 			},
 			"standing_charge_bill_in_advance": schema.BoolAttribute{
-				MarkdownDescription: "Boolean flag that sets the Standing Charge as a bill in advance.",
+				MarkdownDescription: "A boolean flag that determines when the standing charge is billed. This flag overrides the setting at Organizational level for standing charge billing in arrears/in advance.",
 				Optional:            true,
 			},
 			"minimum_spend_bill_in_advance": schema.BoolAttribute{
-				MarkdownDescription: "Boolean flag that sets the Minimum Spend as a bill in advance.",
+				MarkdownDescription: "A boolean flag that determines when the minimum spend is billed. This flag overrides the setting at Organizational level for minimum spend billing in arrears/in advance.",
 				Optional:            true,
 			},
 			"minimum_spend_accounting_product_id": schema.StringAttribute{
-				MarkdownDescription: "The accounting product ID for the minimum spend",
+				MarkdownDescription: "Optional. Product ID to attribute the PlanGroup's minimum spend for accounting purposes.",
 				Optional:            true,
 			},
 			"standing_charge_accounting_product_id": schema.StringAttribute{
-				MarkdownDescription: "The accounting product ID for the standing charge",
+				MarkdownDescription: "Optional. Product ID to attribute the PlanGroup's standing charge for accounting purposes.",
 				Optional:            true,
 			},
 			"id": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "PlanGroup identifier",
+				MarkdownDescription: "The UUID of the entity.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"version": schema.Int64Attribute{
 				Computed:            true,
-				MarkdownDescription: "PlanGroup version",
+				MarkdownDescription: "The version number.",
 			},
 		},
 	}

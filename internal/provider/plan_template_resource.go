@@ -6,6 +6,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
@@ -68,50 +69,51 @@ func (r *PlanTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
-				MarkdownDescription: "Name of the plan template",
+				MarkdownDescription: "Descriptive name for the PlanTemplate.",
 				Required:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthBetween(1, 200),
 				},
 			},
 			"code": schema.StringAttribute{
-				MarkdownDescription: "The short code for the PlanTemplate.",
-				Required:            true,
+				MarkdownDescription: "A unique, short code reference for the PlanTemplate. This code should not contain control characters or spaces.",
+				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthBetween(1, 80),
+					stringvalidator.RegexMatches(regexp.MustCompile(`^([^\p{Cc}\s])|([^\p{Cc}\s][[^\p{Cc}\s] ]*[^\p{Cc}\s])$`), "The code must not contain control characters or start/end with whitespace."),
 				},
 			},
 			"custom_fields": schema.DynamicAttribute{
-				MarkdownDescription: "The name of the Event that triggers the PlanTemplate.",
-				Optional:            true,
+				MarkdownDescription: "User defined fields enabling you to attach custom data. The value for a custom field can be either a string or a number.",
+				Required:            true,
 			},
 			"product_id": schema.StringAttribute{
-				MarkdownDescription: "The product ID that this plan template belongs to",
+				MarkdownDescription: "The unique identifier (UUID) of the Product associated with this PlanTemplate.",
 				Required:            true,
 			},
 			"currency": schema.StringAttribute{
-				MarkdownDescription: "The currency of the plan template",
+				MarkdownDescription: "The ISO currency code for the currency used to charge end users - for example USD, GBP, EUR. This defines the pricing currency and is inherited by any Plans based on the Plan Template.",
 				Required:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthBetween(3, 3),
 				},
 			},
 			"standing_charge": schema.Float64Attribute{
-				MarkdownDescription: "The standing charge of the plan template",
+				MarkdownDescription: "The fixed charge (standing charge) applied to customer bills. This charge is prorated and must be a non-negative number.",
 				Required:            true,
 				Validators: []validator.Float64{
 					float64validator.AtLeast(0),
 				},
 			},
 			"standing_charge_description": schema.StringAttribute{
-				MarkdownDescription: "The standing charge description of the plan template",
+				MarkdownDescription: "Standing charge description (displayed on the bill line item).",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(200),
 				},
 			},
 			"standing_charge_interval": schema.Int32Attribute{
-				MarkdownDescription: "The standing charge interval of the plan template",
+				MarkdownDescription: "How often the standing charge is applied. For example, if the bill is issued every three months and standingChargeInterval is 2, then the standing charge is applied every six months.",
 				Optional:            true,
 				Computed:            true,
 				Validators: []validator.Int32{
@@ -119,7 +121,7 @@ func (r *PlanTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 				},
 			},
 			"standing_charge_offset": schema.Int32Attribute{
-				MarkdownDescription: "The standing charge offset of the plan template",
+				MarkdownDescription: "Defines an offset for when the standing charge is first applied. For example, if the bill is issued every three months and the standingChargeOfset is 0, then the charge is applied to the first bill (at three months); if 1, it would be applied to the second bill (at six months), and so on.",
 				Optional:            true,
 				Computed:            true,
 				Validators: []validator.Int32{
@@ -127,51 +129,51 @@ func (r *PlanTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 				},
 			},
 			"bill_frequency_interval": schema.Int32Attribute{
-				MarkdownDescription: "The bill frequency interval of the plan template",
+				MarkdownDescription: "How often bills are issued. For example, if billFrequency is Monthly and billFrequencyInterval is 3, bills are issued every three months.",
 				Optional:            true,
 				Validators: []validator.Int32{
 					int32validator.Between(1, 365),
 				},
 			},
 			"bill_frequency": schema.StringAttribute{
-				MarkdownDescription: "The bill frequency of the plan template",
+				MarkdownDescription: "Defines how often Bills are generated.",
 				Required:            true,
 				Validators: []validator.String{
 					stringvalidator.OneOf("DAILY", "WEEKLY", "MONTHLY", "ANNUALLY", "AD_HOC", "MIXED"),
 				},
 			},
 			"minimum_spend": schema.Float64Attribute{
-				MarkdownDescription: "The minimum spend of the plan template",
+				MarkdownDescription: "The Product minimum spend amount per billing cycle for end customer Accounts on a pricing Plan based on the PlanTemplate. This must be a non-negative number.",
 				Optional:            true,
 				Validators: []validator.Float64{
 					float64validator.AtLeast(0),
 				},
 			},
 			"minimum_spend_description": schema.StringAttribute{
-				MarkdownDescription: "The minimum spend description of the plan template",
+				MarkdownDescription: "Minimum spend description (displayed on the bill line item).",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(200),
 				},
 			},
 			"standing_charge_bill_in_advance": schema.BoolAttribute{
-				MarkdownDescription: "Boolean flag that sets the Standing Charge as a bill in advance.",
+				MarkdownDescription: "A boolean that determines when the standing charge is billed.",
 				Optional:            true,
 			},
 			"minimum_spend_bill_in_advance": schema.BoolAttribute{
-				MarkdownDescription: "Boolean flag that sets the Minimum Spend as a bill in advance.",
+				MarkdownDescription: "A boolean that determines when the minimum spend is billed.",
 				Optional:            true,
 			},
 			"id": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "PlanTemplate identifier",
+				MarkdownDescription: "The UUID of the entity.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"version": schema.Int64Attribute{
 				Computed:            true,
-				MarkdownDescription: "PlanTemplate version",
+				MarkdownDescription: "The version number.",
 			},
 		},
 	}

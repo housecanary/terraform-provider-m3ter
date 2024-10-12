@@ -66,83 +66,83 @@ func (r *AggregationResource) Schema(ctx context.Context, req resource.SchemaReq
 
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
-				MarkdownDescription: "Name of the scheduled event",
+				MarkdownDescription: "Descriptive name for the Aggregation.",
 				Required:            true,
 			},
 			"custom_fields": schema.DynamicAttribute{
-				MarkdownDescription: "Custom fields",
+				MarkdownDescription: "User defined fields enabling you to attach custom data. The value for a custom field can be either a string or a number.",
 				Required:            true,
 			},
 			"rounding": schema.StringAttribute{
-				MarkdownDescription: "Rounding",
+				MarkdownDescription: "Specifies how you want to deal with non-integer, fractional number Aggregation values.",
 				Required:            true,
 				Validators: []validator.String{
 					stringvalidator.OneOf("UP", "DOWN", "NEAREST", "NONE"),
 				},
 			},
 			"quantity_per_unit": schema.Float64Attribute{
-				MarkdownDescription: "Quantity per unit",
+				MarkdownDescription: "Defines how much of a quantity equates to 1 unit. Used when setting the price per unit for billing purposes - if charging for kilobytes per second (KiBy/s) at rate of $0.25 per 500 KiBy/s, then set quantityPerUnit to 500 and price Plan at $0.25 per unit.",
 				Required:            true,
 				Validators: []validator.Float64{
 					float64validator.AtLeast(0),
 				},
 			},
 			"unit": schema.StringAttribute{
-				MarkdownDescription: "Unit",
+				MarkdownDescription: "User defined label for units shown for Bill line items, indicating to your customers what they are being charged for.",
 				Required:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthBetween(1, 50),
 				},
 			},
 			"code": schema.StringAttribute{
-				MarkdownDescription: "Code",
-				Required:            true,
+				MarkdownDescription: "Code of the new Aggregation. A unique short code to identify the Aggregation.",
+				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(80),
 					stringvalidator.RegexMatches(regexp.MustCompile(`^[\p{L}_$][\p{L}_$0-9]*$`), "must be a code"),
 				},
 			},
 			"meter_id": schema.StringAttribute{
-				MarkdownDescription: "Meter ID",
+				MarkdownDescription: "The UUID of the Meter used as the source of usage data for the Aggregation.",
 				Required:            true,
 			},
 			"target_field": schema.StringAttribute{
-				MarkdownDescription: "Target field",
+				MarkdownDescription: "Code of the target dataField or derivedField on the Meter used as the basis for the Aggregation.",
 				Required:            true,
 			},
 			"aggregation": schema.StringAttribute{
-				MarkdownDescription: "Aggregation",
+				MarkdownDescription: "Specifies the computation method applied to usage data collected in targetField.",
 				Required:            true,
 				Validators: []validator.String{
 					stringvalidator.OneOf("SUM", "MIN", "MAX", "COUNT", "LATEST", "MEAN", "UNIQUE"),
 				},
 			},
 			"segmented_fields": schema.ListAttribute{
-				MarkdownDescription: "Segmented fields",
+				MarkdownDescription: "Used when creating a segmented Aggregation, which segments the usage data collected by a single Meter. Works together with segments.",
 				ElementType:         types.StringType,
 				Optional:            true,
 			},
 			"segments": schema.ListAttribute{
-				MarkdownDescription: "Segments",
+				MarkdownDescription: "Used when creating a segmented Aggregation, which segments the usage data collected by a single Meter. Works together with segmentedFields.",
 				Optional:            true,
 				ElementType: types.MapType{
 					ElemType: types.StringType,
 				},
 			},
 			"default_value": schema.Float64Attribute{
-				MarkdownDescription: "Default value",
+				MarkdownDescription: "Aggregation value used when no usage data is available to be aggregated.",
 				Optional:            true,
 			},
 			"id": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "Scheduled Event Configuration identifier",
+				MarkdownDescription: "The UUID of the entity.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"version": schema.Int64Attribute{
 				Computed:            true,
-				MarkdownDescription: "Scheduled Event Configuration version",
+				MarkdownDescription: "The version number.",
 			},
 		},
 	}

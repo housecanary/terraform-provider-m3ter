@@ -50,22 +50,22 @@ func (r *AggregationDataSource) Schema(ctx context.Context, req datasource.Schem
 
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
-				MarkdownDescription: "Name of the aggregation",
+				MarkdownDescription: "Descriptive name for the Aggregation.",
 				Optional:            true,
 				Computed:            true,
 			},
 			"code": schema.StringAttribute{
-				MarkdownDescription: "The short code for the Aggregation.",
+				MarkdownDescription: "Code of the Aggregation. A unique short code to identify the Aggregation.",
 				Optional:            true,
 				Computed:            true,
 			},
 			"custom_fields": schema.DynamicAttribute{
-				MarkdownDescription: "Custom fields for the aggregation",
+				MarkdownDescription: "User defined fields enabling you to attach custom data. The value for a custom field can be either a string or a number.",
 				Optional:            true,
 				Computed:            true,
 			},
 			"segments": schema.ListAttribute{
-				MarkdownDescription: "Segments for the aggregation",
+				MarkdownDescription: "Used when creating a segmented Aggregation, which segments the usage data collected by a single Meter. Works together with `segmentedFields`.\n\nContains the values that are to be used as the segments, read from the fields in the meter pointed at by `segmentedFields`.",
 				Computed:            true,
 				ElementType: types.MapType{
 					ElemType: types.StringType,
@@ -74,11 +74,11 @@ func (r *AggregationDataSource) Schema(ctx context.Context, req datasource.Schem
 			"id": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				MarkdownDescription: "Aggregation identifier",
+				MarkdownDescription: "The UUID of the entity.",
 			},
 			"version": schema.Int64Attribute{
 				Computed:            true,
-				MarkdownDescription: "Aggregation version",
+				MarkdownDescription: "The version number.",
 			},
 		},
 	}

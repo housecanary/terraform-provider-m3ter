@@ -48,17 +48,17 @@ func (r *ProductDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
-				MarkdownDescription: "Name of the product",
+				MarkdownDescription: "Descriptive name for the Product providing context and information.",
 				Optional:            true,
 				Computed:            true,
 			},
 			"code": schema.StringAttribute{
-				MarkdownDescription: "The short code for the Product.",
+				MarkdownDescription: "A unique short code to identify the Product. It should not contain control characters or spaces.",
 				Optional:            true,
 				Computed:            true,
 			},
 			"custom_fields": schema.DynamicAttribute{
-				MarkdownDescription: "The name of the Event that triggers the Product.",
+				MarkdownDescription: "User defined fields enabling you to attach custom data. The value for a custom field can be either a string or a number.",
 				Optional:            true,
 				Computed:            true,
 			},
