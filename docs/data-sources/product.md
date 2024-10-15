@@ -18,10 +18,10 @@ Product data source
 ### Optional
 
 - `code` (String) A unique short code to identify the Product. It should not contain control characters or spaces.
-- `custom_fields` (Dynamic) User defined fields enabling you to attach custom data. The value for a custom field can be either a string or a number.
 - `id` (String) Product identifier
 - `name` (String) Descriptive name for the Product providing context and information.
 
 ### Read-Only
 
+- `custom_fields` (Dynamic) User defined fields enabling you to attach custom data. The value for a custom field can be either a string or a number.
 - `version` (Number) Product version

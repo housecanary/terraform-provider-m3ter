@@ -53,9 +53,9 @@ func (c *m3terClient) execute(ctx context.Context, method string, path string, q
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			return fmt.Errorf("unexpected status code %d", resp.StatusCode)
+			return &statusCodeError{StatusCode: resp.StatusCode}
 		}
-		return fmt.Errorf("unexpected status code %d: %s", resp.StatusCode, body)
+		return &statusCodeError{StatusCode: resp.StatusCode, Body: string(body)}
 	}
 
 	if responseBody != nil {
@@ -65,4 +65,16 @@ func (c *m3terClient) execute(ctx context.Context, method string, path string, q
 		}
 	}
 	return nil
+}
+
+type statusCodeError struct {
+	StatusCode int
+	Body       string
+}
+
+func (e *statusCodeError) Error() string {
+	if e.Body == "" {
+		return fmt.Sprintf("unexpected status code %d", e.StatusCode)
+	}
+	return fmt.Sprintf("unexpected status code %d: %s", e.StatusCode, e.Body)
 }

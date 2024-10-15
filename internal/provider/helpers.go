@@ -73,38 +73,47 @@ func (m *mapper) listTo(key string, target *types.List, elemType attr.Type, fn f
 }
 
 func (m *mapper) customFieldsTo(target *types.Dynamic) {
-	if cf, ok := m.v["customFields"].(map[string]any); ok {
-		if len(cf) == 0 {
-			return
-		}
-		translated := make(map[string]attr.Value)
-		for k, v := range cf {
-			switch v := v.(type) {
-			case string:
-				translated[k] = types.DynamicValue(types.StringValue(v))
-			case float64:
-				translated[k] = types.DynamicValue(types.Float64Value(v))
-			default:
-				m.diagnostics.AddError("Invalid custom field value", fmt.Sprintf("Custom field %s has an invalid value type: %T", k, v))
-			}
-		}
-		switch target.UnderlyingValue().(type) {
-		case types.Map:
-			mv, diag := types.MapValue(types.DynamicType, translated)
+	if target.IsUnknown() || target.IsUnderlyingValueUnknown() {
+		mv, diag := types.MapValueFrom(m.ctx, types.DynamicType, m.v["customFields"])
+		m.diagnostics.Append(diag...)
+		*target = types.DynamicValue(mv)
+		return
+	}
+
+	switch v := target.UnderlyingValue().(type) {
+	case types.Map:
+		if cf, ok := m.v["customFields"].(map[string]any); ok {
+			mv, diag := types.MapValueFrom(m.ctx, v.ElementType(m.ctx), cf)
 			m.diagnostics.Append(diag...)
 			*target = types.DynamicValue(mv)
-		case types.Object:
+		} else {
+			mv, diag := types.MapValueFrom(m.ctx, v.ElementType(m.ctx), nil)
+			m.diagnostics.Append(diag...)
+			*target = types.DynamicValue(mv)
+		}
+	default:
+		if cf, ok := m.v["customFields"].(map[string]any); ok {
 			typ := make(map[string]attr.Type)
-			for k := range translated {
-				typ[k] = types.DynamicType
+			translated := make(map[string]attr.Value)
+			for k, v := range cf {
+				switch v := v.(type) {
+				case string:
+					typ[k] = types.StringType
+					translated[k] = types.StringValue(v)
+				case float64:
+					typ[k] = types.Float64Type
+					translated[k] = types.Float64Value(v)
+				default:
+					m.diagnostics.AddError("Invalid custom field value", fmt.Sprintf("Custom field %s has an invalid value type: %T", k, v))
+				}
 			}
 			ov, diag := types.ObjectValue(typ, translated)
 			m.diagnostics.Append(diag...)
 			*target = types.DynamicValue(ov)
-		default:
-			mv, diag := types.MapValue(types.DynamicType, translated)
+		} else {
+			ov, diag := types.ObjectValue(nil, nil)
 			m.diagnostics.Append(diag...)
-			*target = types.DynamicValue(mv)
+			*target = types.DynamicValue(ov)
 		}
 	}
 }
@@ -135,7 +144,7 @@ func (m *mapper) listFrom(source types.List, target string, fn func(v attr.Value
 		return
 	}
 
-	var v []any
+	v := make([]any, 0, len(source.Elements()))
 	for _, e := range source.Elements() {
 		elem, diag := fn(e)
 		m.diagnostics.Append(diag...)
@@ -188,6 +197,8 @@ func (m *mapper) customFieldsFrom(source types.Dynamic) {
 			}
 		}
 		m.v["customFields"] = customFields
+	} else {
+		m.v["customFields"] = make(map[string]any)
 	}
 }
 

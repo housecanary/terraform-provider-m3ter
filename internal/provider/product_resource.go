@@ -6,6 +6,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -71,7 +72,7 @@ func (r *ProductResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"custom_fields": schema.DynamicAttribute{
 				MarkdownDescription: "User defined fields enabling you to attach custom data. The value for a custom field can be either a string or a number.",
-				Optional:            true,
+				Required:            true,
 			},
 			"id": schema.StringAttribute{
 				Computed:            true,
@@ -125,6 +126,39 @@ func (r *ProductResource) Delete(ctx context.Context, req resource.DeleteRequest
 }
 
 func (r *ProductResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	var restData map[string]any
+	err := r.client.execute(ctx, "GET", "/products/"+url.PathEscape(req.ID), nil, nil, &restData)
+	if sc, ok := err.(*statusCodeError); ok && sc.StatusCode == 404 {
+		urlValues := url.Values{}
+		urlValues.Set("pageSize", "200")
+		for {
+			var productListResponse struct {
+				Data []struct {
+					Id      string `json:"id"`
+					Code    string `json:"code"`
+					Version int64  `json:"version"`
+				} `json:"data"`
+				NextToken string `json:"next_token"`
+			}
+			err := r.client.execute(ctx, "GET", "/products", nil, nil, &productListResponse)
+			if err != nil {
+				resp.Diagnostics.AddError("Failed to list products", err.Error())
+				return
+			}
+			for _, product := range productListResponse.Data {
+				if product.Code == req.ID {
+					resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), product.Id)...)
+					return
+				}
+			}
+			if productListResponse.NextToken == "" {
+				break
+			}
+			urlValues.Set("nextToken", productListResponse.NextToken)
+		}
+
+		resp.Diagnostics.AddError("Product not found", "The product with code "+req.ID+" does not exist.")
+	}
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 

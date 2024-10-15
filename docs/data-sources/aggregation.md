@@ -18,12 +18,12 @@ Aggregation data source
 ### Optional
 
 - `code` (String) Code of the Aggregation. A unique short code to identify the Aggregation.
-- `custom_fields` (Dynamic) User defined fields enabling you to attach custom data. The value for a custom field can be either a string or a number.
 - `id` (String) The UUID of the entity.
 - `name` (String) Descriptive name for the Aggregation.
 
 ### Read-Only
 
+- `custom_fields` (Dynamic) User defined fields enabling you to attach custom data. The value for a custom field can be either a string or a number.
 - `segments` (List of Map of String) Used when creating a segmented Aggregation, which segments the usage data collected by a single Meter. Works together with `segmentedFields`.
 
 Contains the values that are to be used as the segments, read from the fields in the meter pointed at by `segmentedFields`.

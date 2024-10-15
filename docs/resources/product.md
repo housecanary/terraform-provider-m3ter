@@ -18,11 +18,8 @@ Product resource
 ### Required
 
 - `code` (String) A unique short code to identify the Product. It should not contain control chracters or spaces.
-- `name` (String) Descriptive name for the Product providing context and information.
-
-### Optional
-
 - `custom_fields` (Dynamic) User defined fields enabling you to attach custom data. The value for a custom field can be either a string or a number.
+- `name` (String) Descriptive name for the Product providing context and information.
 
 ### Read-Only
 

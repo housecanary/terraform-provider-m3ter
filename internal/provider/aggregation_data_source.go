@@ -61,7 +61,6 @@ func (r *AggregationDataSource) Schema(ctx context.Context, req datasource.Schem
 			},
 			"custom_fields": schema.DynamicAttribute{
 				MarkdownDescription: "User defined fields enabling you to attach custom data. The value for a custom field can be either a string or a number.",
-				Optional:            true,
 				Computed:            true,
 			},
 			"segments": schema.ListAttribute{

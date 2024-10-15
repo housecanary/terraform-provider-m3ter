@@ -6,6 +6,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
@@ -185,6 +186,34 @@ func (r *AggregationResource) Delete(ctx context.Context, req resource.DeleteReq
 }
 
 func (r *AggregationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	var restData map[string]any
+	err := r.client.execute(ctx, "GET", "/aggregations/"+url.PathEscape(req.ID), nil, nil, &restData)
+	if sc, ok := err.(*statusCodeError); ok && sc.StatusCode == 404 {
+		urlValues := url.Values{}
+		urlValues.Set("pageSize", "1")
+		urlValues.Set("codes", req.ID)
+
+		var aggregationListResponse struct {
+			Data []struct {
+				Id      string `json:"id"`
+				Code    string `json:"code"`
+				Version int64  `json:"version"`
+			} `json:"data"`
+			NextToken string `json:"next_token"`
+		}
+		err := r.client.execute(ctx, "GET", "/aggregations", nil, nil, &aggregationListResponse)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to list aggregations", err.Error())
+			return
+		}
+		for _, aggregation := range aggregationListResponse.Data {
+			if aggregation.Code == req.ID {
+				resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), aggregation.Id)...)
+				return
+			}
+		}
+		resp.Diagnostics.AddError("Aggregation not found", "The aggregation with code "+req.ID+" does not exist.")
+	}
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
@@ -261,7 +290,7 @@ func (r *AggregationResource) write(ctx context.Context, data *AggregationResour
 		if !ok {
 			return nil, diag.Diagnostics{diag.NewErrorDiagnostic("expected a string in segmented fields", "expected a string in segmented fields")}
 		}
-		return s, nil
+		return s.ValueString(), nil
 	})
 
 	m.listFrom(data.Segments, "segments", func(v attr.Value) (any, diag.Diagnostics) {
