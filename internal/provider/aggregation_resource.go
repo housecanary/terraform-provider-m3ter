@@ -122,10 +122,12 @@ func (r *AggregationResource) Schema(ctx context.Context, req resource.SchemaReq
 				MarkdownDescription: "Used when creating a segmented Aggregation, which segments the usage data collected by a single Meter. Works together with segments.",
 				ElementType:         types.StringType,
 				Optional:            true,
+				Computed:            true,
 			},
 			"segments": schema.ListAttribute{
 				MarkdownDescription: "Used when creating a segmented Aggregation, which segments the usage data collected by a single Meter. Works together with segmentedFields.",
 				Optional:            true,
+				Computed:            true,
 				ElementType: types.MapType{
 					ElemType: types.StringType,
 				},
