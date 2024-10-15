@@ -59,6 +59,9 @@ func (m *mapper) to(key string, target attrTyped) {
 func (m *mapper) listTo(key string, target *types.List, elemType attr.Type, fn func(any) (attr.Value, diag.Diagnostics)) {
 	if v, ok := m.v[key]; ok {
 		if v, ok := v.([]any); ok {
+			if target.IsNull() && len(v) == 0 {
+				return
+			}
 			var elements []attr.Value
 			for _, e := range v {
 				elem, diag := fn(e)
