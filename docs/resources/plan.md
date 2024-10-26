@@ -24,6 +24,8 @@ Plan resource
 
 ### Optional
 
+- `account_id` (String) Used to specify an Account for which the Plan will be a custom/bespoke Plan.
+- `bespoke` (Boolean) TRUE/FALSE flag indicating whether the plan is a custom/bespoke Plan for a particular Account.
 - `minimum_spend` (Number) The product minimum spend amount per billing cycle for end customer Accounts on a priced Plan.
 - `minimum_spend_bill_in_advance` (Boolean) When TRUE, minimum spend is billed at the start of each billing period.
 

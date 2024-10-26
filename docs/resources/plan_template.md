@@ -19,7 +19,6 @@ PlanTemplate resource
 
 - `bill_frequency` (String) Defines how often Bills are generated.
 - `currency` (String) The ISO currency code for the currency used to charge end users - for example USD, GBP, EUR. This defines the pricing currency and is inherited by any Plans based on the Plan Template.
-- `custom_fields` (Dynamic) User defined fields enabling you to attach custom data. The value for a custom field can be either a string or a number.
 - `name` (String) Descriptive name for the PlanTemplate.
 - `product_id` (String) The unique identifier (UUID) of the Product associated with this PlanTemplate.
 - `standing_charge` (Number) The fixed charge (standing charge) applied to customer bills. This charge is prorated and must be a non-negative number.
@@ -28,6 +27,7 @@ PlanTemplate resource
 
 - `bill_frequency_interval` (Number) How often bills are issued. For example, if billFrequency is Monthly and billFrequencyInterval is 3, bills are issued every three months.
 - `code` (String) A unique, short code reference for the PlanTemplate. This code should not contain control characters or spaces.
+- `custom_fields` (Dynamic) User defined fields enabling you to attach custom data. The value for a custom field can be either a string or a number.
 - `minimum_spend` (Number) The Product minimum spend amount per billing cycle for end customer Accounts on a pricing Plan based on the PlanTemplate. This must be a non-negative number.
 - `minimum_spend_bill_in_advance` (Boolean) A boolean that determines when the minimum spend is billed.
 - `minimum_spend_description` (String) Minimum spend description (displayed on the bill line item).
