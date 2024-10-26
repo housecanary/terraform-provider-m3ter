@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -41,10 +42,12 @@ type PlanResourceModel struct {
 	PlanTemplateId              types.String  `tfsdk:"plan_template_id"`
 	StandingCharge              types.Float64 `tfsdk:"standing_charge"`
 	StandingChargeDescription   types.String  `tfsdk:"standing_charge_description"`
+	Bespoke                     types.Bool    `tfsdk:"bespoke"`
 	MinimumSpend                types.Float64 `tfsdk:"minimum_spend"`
 	MinimumSpendDescription     types.String  `tfsdk:"minimum_spend_description"`
 	StandingChargeBillInAdvance types.Bool    `tfsdk:"standing_charge_bill_in_advance"`
 	MinimumSpendBillInAdvance   types.Bool    `tfsdk:"minimum_spend_bill_in_advance"`
+	AccountId                   types.String  `tfsdk:"account_id"`
 	Id                          types.String  `tfsdk:"id"`
 	Version                     types.Int64   `tfsdk:"version"`
 }
@@ -102,6 +105,14 @@ func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 					stringvalidator.LengthAtMost(200),
 				},
 			},
+			"bespoke": schema.BoolAttribute{
+				MarkdownDescription: "TRUE/FALSE flag indicating whether the plan is a custom/bespoke Plan for a particular Account.",
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.RequiresReplace(),
+				},
+			},
 			"minimum_spend": schema.Float64Attribute{
 				MarkdownDescription: "The product minimum spend amount per billing cycle for end customer Accounts on a priced Plan.",
 				Optional:            true,
@@ -123,6 +134,13 @@ func (r *PlanResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 			"minimum_spend_bill_in_advance": schema.BoolAttribute{
 				MarkdownDescription: "When TRUE, minimum spend is billed at the start of each billing period.\n\nWhen FALSE, minimum spend is billed at the end of each billing period.",
 				Optional:            true,
+			},
+			"account_id": schema.StringAttribute{
+				MarkdownDescription: "Used to specify an Account for which the Plan will be a custom/bespoke Plan.",
+				Optional:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"id": schema.StringAttribute{
 				Computed:            true,
@@ -192,10 +210,12 @@ func (r *PlanResource) read(ctx context.Context, data *PlanResourceModel, restDa
 	m.to("planTemplateId", &data.PlanTemplateId)
 	m.to("standingCharge", &data.StandingCharge)
 	m.to("standingChargeDescription", &data.StandingChargeDescription)
+	m.to("bespoke", &data.Bespoke)
 	m.to("minimumSpend", &data.MinimumSpend)
 	m.to("minimumSpendDescription", &data.MinimumSpendDescription)
 	m.to("standingChargeBillInAdvance", &data.StandingChargeBillInAdvance)
 	m.to("minimumSpendBillInAdvance", &data.MinimumSpendBillInAdvance)
+	m.to("accountId", &data.AccountId)
 	m.customFieldsTo(&data.CustomFields)
 }
 
@@ -212,9 +232,11 @@ func (r *PlanResource) write(ctx context.Context, data *PlanResourceModel, restD
 	m.from(data.PlanTemplateId, "planTemplateId")
 	m.from(data.StandingCharge, "standingCharge")
 	m.from(data.StandingChargeDescription, "standingChargeDescription")
+	m.from(data.Bespoke, "bespoke")
 	m.from(data.MinimumSpend, "minimumSpend")
 	m.from(data.MinimumSpendDescription, "minimumSpendDescription")
 	m.from(data.StandingChargeBillInAdvance, "standingChargeBillInAdvance")
 	m.from(data.MinimumSpendBillInAdvance, "minimumSpendBillInAdvance")
+	m.from(data.AccountId, "accountId")
 	m.customFieldsFrom(data.CustomFields)
 }

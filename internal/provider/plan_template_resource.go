@@ -6,6 +6,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
@@ -85,7 +86,7 @@ func (r *PlanTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 			},
 			"custom_fields": schema.DynamicAttribute{
 				MarkdownDescription: "User defined fields enabling you to attach custom data. The value for a custom field can be either a string or a number.",
-				Required:            true,
+				Optional:            true,
 			},
 			"product_id": schema.StringAttribute{
 				MarkdownDescription: "The unique identifier (UUID) of the Product associated with this PlanTemplate.",
@@ -216,6 +217,37 @@ func (r *PlanTemplateResource) Delete(ctx context.Context, req resource.DeleteRe
 }
 
 func (r *PlanTemplateResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	var restData map[string]any
+	err := r.client.execute(ctx, "GET", "/plantemplates/"+url.PathEscape(req.ID), nil, nil, &restData)
+	if sc, ok := err.(*statusCodeError); ok && sc.StatusCode == 404 {
+		urlValues := url.Values{}
+		urlValues.Set("pageSize", "200")
+
+		var listResponse struct {
+			Data []struct {
+				Id      string `json:"id"`
+				Name    string `json:"name"`
+				Code    string `json:"code"`
+				Version int64  `json:"version"`
+			} `json:"data"`
+			NextToken string `json:"next_token"`
+		}
+		err := r.client.execute(ctx, "GET", "/plantemplates", nil, nil, &listResponse)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to list plan templates", err.Error())
+			return
+		}
+		for _, meter := range listResponse.Data {
+			if meter.Code == req.ID {
+				resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), meter.Id)...)
+				return
+			} else if meter.Code == "" && meter.Name == req.ID {
+				resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), meter.Id)...)
+				return
+			}
+		}
+		resp.Diagnostics.AddError("Plan template not found", "The plan template with name or code "+req.ID+" does not exist.")
+	}
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
