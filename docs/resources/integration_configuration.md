@@ -30,13 +30,13 @@ resource "m3ter_integration_configuration" "test" {
 
 - `config_data` (String) A flexible object to include any additional configuration data specific to the integration.
 - `destination` (String) Denotes the integration destination. This field identifies the target platform or service for the integration.
-- `destination_id` (String) The unique identifier (UUID) for the integration destination.
-- `entity_id` (String) The unique identifier (UUID) of the entity. This field is used to specify which entity's integration configuration you're updating.
 - `entity_type` (String) Specifies the type of entity for which the integration configuration is being updated. Must be a valid alphanumeric string.
 - `name` (String) Name of the Integration Configuration
 
 ### Optional
 
+- `destination_id` (String) The unique identifier (UUID) for the integration destination.
+- `entity_id` (String) The unique identifier (UUID) of the entity. This field is used to specify which entity's integration configuration you're updating.
 - `integration_credentials_id` (String) The unique identifier (UUID) of the integration credentials. This field is used to specify the credentials used for the integration.
 
 ### Read-Only

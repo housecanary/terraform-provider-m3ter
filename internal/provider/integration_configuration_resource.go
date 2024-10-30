@@ -69,7 +69,7 @@ func (r *IntegrationConfigurationResource) Schema(ctx context.Context, req resou
 			},
 			"entity_id": schema.StringAttribute{
 				MarkdownDescription: "The unique identifier (UUID) of the entity. This field is used to specify which entity's integration configuration you're updating.",
-				Required:            true,
+				Optional:            true,
 			},
 			"destination": schema.StringAttribute{
 				MarkdownDescription: "Denotes the integration destination. This field identifies the target platform or service for the integration.",
@@ -81,7 +81,7 @@ func (r *IntegrationConfigurationResource) Schema(ctx context.Context, req resou
 			},
 			"destination_id": schema.StringAttribute{
 				MarkdownDescription: "The unique identifier (UUID) for the integration destination.",
-				Required:            true,
+				Optional:            true,
 			},
 			"config_data": schema.StringAttribute{
 				MarkdownDescription: "A flexible object to include any additional configuration data specific to the integration.",
@@ -165,6 +165,9 @@ func (r *IntegrationConfigurationResource) read(ctx context.Context, data *Integ
 	m.to("entityId", &data.EntityId)
 	m.to("destination", &data.Destination)
 	m.to("destinationId", &data.DestinationId)
+	if _, ok := restData["integrationCredentialsId"]; !ok {
+		restData["integrationCredentialsId"] = ""
+	}
 	m.to("integrationCredentialsId", &data.IntegrationCredentialsId)
 	configData, _ := json.Marshal(restData["configData"])
 	data.ConfigData = types.StringValue(string(configData))
@@ -183,6 +186,8 @@ func (r *IntegrationConfigurationResource) write(ctx context.Context, data *Inte
 	m.from(data.EntityId, "entityId")
 	m.from(data.Destination, "destination")
 	m.from(data.DestinationId, "destinationId")
-	m.from(data.IntegrationCredentialsId, "integrationCredentialsId")
+	if data.IntegrationCredentialsId.ValueString() != "" {
+		m.from(data.IntegrationCredentialsId, "integrationCredentialsId")
+	}
 	restData["configData"] = json.RawMessage(data.ConfigData.ValueString())
 }
