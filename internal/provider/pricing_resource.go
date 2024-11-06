@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -111,10 +112,16 @@ func (r *PricingResource) Schema(ctx context.Context, req resource.SchemaRequest
 			"aggregation_id": schema.StringAttribute{
 				MarkdownDescription: "UUID of the Aggregation used to create the Pricing. Use this when creating a Pricing for a segmented aggregation.",
 				Optional:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"compound_aggregation_id": schema.StringAttribute{
 				MarkdownDescription: "UUID of the Compound Aggregation used to create the Pricing.",
 				Optional:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"type": schema.StringAttribute{
 				MarkdownDescription: "The type of the pricing.",
@@ -133,6 +140,7 @@ func (r *PricingResource) Schema(ctx context.Context, req resource.SchemaRequest
 				MarkdownDescription: "If TRUE, usage accumulates over the entire period the priced Plan is active for the account, and is not reset for pricing band rates at the start of each billing period.\n\nIf FALSE, usage does not accumulate, and is reset for pricing bands at the start of each billing period.",
 				Optional:            true,
 				Computed:            true,
+				Default:             booldefault.StaticBool(false),
 			},
 			"minimum_spend": schema.Float64Attribute{
 				MarkdownDescription: "The minimum spend amount per billing cycle for end customer Accounts on a Plan to which the Pricing is applied.",
@@ -160,15 +168,22 @@ func (r *PricingResource) Schema(ctx context.Context, req resource.SchemaRequest
 			"plan_id": schema.StringAttribute{
 				MarkdownDescription: "UUID of the Plan the Pricing is created for.",
 				Optional:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"plan_template_id": schema.StringAttribute{
 				MarkdownDescription: "UUID of the Plan Template the Pricing is created for.",
 				Optional:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"cumulative": schema.BoolAttribute{
 				MarkdownDescription: "Controls whether or not charge rates under a set of pricing bands configured for a Pricing are applied according to each separate band or at the highest band reached.",
 				Optional:            true,
 				Computed:            true,
+				Default:             booldefault.StaticBool(false),
 			},
 			"start_date": schema.StringAttribute{
 				MarkdownDescription: "The start date (in ISO-8601 format) for when the Pricing starts to be active for the Plan of Plan Template.",
