@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -120,6 +121,9 @@ func (r *PlanTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 				Validators: []validator.Int32{
 					int32validator.Between(1, 365),
 				},
+				PlanModifiers: []planmodifier.Int32{
+					int32planmodifier.UseStateForUnknown(),
+				},
 			},
 			"standing_charge_offset": schema.Int32Attribute{
 				MarkdownDescription: "Defines an offset for when the standing charge is first applied. For example, if the bill is issued every three months and the standingChargeOfset is 0, then the charge is applied to the first bill (at three months); if 1, it would be applied to the second bill (at six months), and so on.",
@@ -127,6 +131,9 @@ func (r *PlanTemplateResource) Schema(ctx context.Context, req resource.SchemaRe
 				Computed:            true,
 				Validators: []validator.Int32{
 					int32validator.Between(0, 364),
+				},
+				PlanModifiers: []planmodifier.Int32{
+					int32planmodifier.UseStateForUnknown(),
 				},
 			},
 			"bill_frequency_interval": schema.Int32Attribute{

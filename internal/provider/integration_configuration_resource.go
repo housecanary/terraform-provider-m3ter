@@ -91,6 +91,9 @@ func (r *IntegrationConfigurationResource) Schema(ctx context.Context, req resou
 				MarkdownDescription: "The unique identifier (UUID) of the integration credentials. This field is used to specify the credentials used for the integration.",
 				Optional:            true,
 				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"name": schema.StringAttribute{
 				MarkdownDescription: "Name of the Integration Configuration",

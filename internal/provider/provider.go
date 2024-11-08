@@ -181,6 +181,7 @@ func (p *M3terProvider) Resources(ctx context.Context) []func() resource.Resourc
 		NewPlanGroupLinkResource,
 		NewAggregationResource,
 		NewMeterResource,
+		NewCounterResource,
 	}
 }
 

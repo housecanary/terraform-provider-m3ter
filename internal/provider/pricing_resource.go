@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -130,6 +131,9 @@ func (r *PricingResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Validators: []validator.String{
 					stringvalidator.OneOf("DEBIT", "PRODUCT_CREDIT", "GLOBAL_CREDIT"),
 				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"segment": schema.MapAttribute{
 				MarkdownDescription: "Specifies the segment value which you are defining a Pricing for using this call.",
@@ -141,6 +145,9 @@ func (r *PricingResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Optional:            true,
 				Computed:            true,
 				Default:             booldefault.StaticBool(false),
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"minimum_spend": schema.Float64Attribute{
 				MarkdownDescription: "The minimum spend amount per billing cycle for end customer Accounts on a Plan to which the Pricing is applied.",
@@ -184,6 +191,9 @@ func (r *PricingResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Optional:            true,
 				Computed:            true,
 				Default:             booldefault.StaticBool(false),
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"start_date": schema.StringAttribute{
 				MarkdownDescription: "The start date (in ISO-8601 format) for when the Pricing starts to be active for the Plan of Plan Template.",
