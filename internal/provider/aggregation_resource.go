@@ -310,4 +310,7 @@ func (r *AggregationResource) write(ctx context.Context, data *AggregationResour
 	})
 
 	m.from(data.DefaultValue, "defaultValue")
+	if data.DefaultValue.IsNull() && !data.DefaultValue.IsUnknown() {
+		m.v["defaultValue"] = nil
+	}
 }
