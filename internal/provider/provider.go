@@ -182,6 +182,7 @@ func (p *M3terProvider) Resources(ctx context.Context) []func() resource.Resourc
 		NewAggregationResource,
 		NewMeterResource,
 		NewCounterResource,
+		NewTransactionTypeResource,
 	}
 }
 
