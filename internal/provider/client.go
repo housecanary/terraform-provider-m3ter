@@ -11,40 +11,37 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-
-	"golang.org/x/time/rate"
 )
 
 type m3terClient struct {
 	organizationID string
 	client         *http.Client
-	limit          *rate.Limiter
+	limiter        *BackoffRateLimiter
 }
 
 func (c *m3terClient) execute(ctx context.Context, method string, path string, query url.Values, requestBody any, responseBody any) error {
-	err := c.limit.Wait(ctx)
-	if err != nil {
-		return err
-	}
 	fullURL := "https://api.m3ter.com/organizations/" + url.PathEscape(c.organizationID) + path
 	if query != nil {
 		fullURL += "?" + query.Encode()
 	}
 
-	var requestBodyReader io.Reader
-	if requestBody != nil {
-		body, err := json.Marshal(requestBody)
-		if err != nil {
-			return err
+	resp, err := c.limiter.doWithLimit(func() (*http.Response, error) {
+		var requestBodyReader io.Reader
+		if requestBody != nil {
+			body, err := json.Marshal(requestBody)
+			if err != nil {
+				return nil, err
+			}
+			requestBodyReader = bytes.NewReader(body)
 		}
-		requestBodyReader = bytes.NewReader(body)
-	}
-	req, err := http.NewRequestWithContext(ctx, method, fullURL, requestBodyReader)
-	if err != nil {
-		return err
-	}
+		req, err := http.NewRequestWithContext(ctx, method, fullURL, requestBodyReader)
+		if err != nil {
+			return nil, err
+		}
 
-	resp, err := c.client.Do(req)
+		return c.client.Do(req)
+	})
+
 	if err != nil {
 		return err
 	}

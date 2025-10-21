@@ -3,6 +3,7 @@ module terraform-provider-m3ter
 go 1.25.1
 
 require (
+	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/hashicorp/terraform-plugin-framework v1.15.1
 	github.com/hashicorp/terraform-plugin-framework-validators v0.18.0
 	golang.org/x/oauth2 v0.31.0
