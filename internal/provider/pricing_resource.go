@@ -389,7 +389,7 @@ func writePricingBandList(bands types.List, diagnostics *diag.Diagnostics) []any
 			"unitPrice":  unitPrice.ValueFloat64(),
 		}
 		id, ok := attrs["id"].(types.String)
-		if ok && !id.IsUnknown() {
+		if ok && !id.IsUnknown() && !id.IsNull() {
 			bandMap["id"] = id.ValueString()
 		}
 
