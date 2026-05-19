@@ -64,7 +64,7 @@ var pricingBandNestedObject = schema.NestedAttributeObject{
 		"id": schema.StringAttribute{
 			Computed: true,
 			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+				useStateForUnknownSkipNullModifier{},
 			},
 		},
 		"lower_limit": schema.Float64Attribute{
@@ -389,7 +389,7 @@ func writePricingBandList(bands types.List, diagnostics *diag.Diagnostics) []any
 			"unitPrice":  unitPrice.ValueFloat64(),
 		}
 		id, ok := attrs["id"].(types.String)
-		if ok && !id.IsUnknown() && !id.IsNull() {
+		if ok && !id.IsUnknown() {
 			bandMap["id"] = id.ValueString()
 		}
 
