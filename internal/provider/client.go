@@ -38,6 +38,9 @@ func (c *m3terClient) execute(ctx context.Context, method string, path string, q
 		if err != nil {
 			return nil, err
 		}
+		if requestBody != nil {
+			req.Header.Set("Content-Type", "application/json")
+		}
 
 		return c.client.Do(req)
 	})
