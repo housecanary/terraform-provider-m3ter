@@ -56,6 +56,16 @@ func (m *mapper) to(key string, target attrTyped) {
 	}
 }
 
+func (m *mapper) optionalStringTo(key string, target *types.String) {
+	// if the values from the API is an empty string and value in the state is null, we won't overwrite the state value with an empty string.
+	if v, ok := m.v[key]; ok {
+		if v == "" && target.IsNull() {
+			return
+		}
+		m.diagnostics.Append(tfsdk.ValueFrom(m.ctx, v, target.Type(m.ctx), target)...)
+	}
+}
+
 func (m *mapper) listTo(key string, target *types.List, elemType attr.Type, fn func(any) (attr.Value, diag.Diagnostics)) {
 	if v, ok := m.v[key]; ok {
 		if v, ok := v.([]any); ok {

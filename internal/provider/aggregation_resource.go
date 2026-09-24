@@ -261,6 +261,9 @@ func (r *AggregationResource) read(ctx context.Context, data *AggregationResourc
 			}
 		}
 
+		if diags.HasError() {
+			return nil, diags
+		}
 		return types.MapValue(types.StringType, segment)
 	})
 

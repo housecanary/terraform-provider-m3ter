@@ -212,10 +212,12 @@ func (r *PlanResource) read(ctx context.Context, data *PlanResourceModel, restDa
 	m.to("code", &data.Code)
 	m.to("planTemplateId", &data.PlanTemplateId)
 	m.to("standingCharge", &data.StandingCharge)
-	m.to("standingChargeDescription", &data.StandingChargeDescription)
+	// this field got into a state where the state had a null value and the API returned an empty string, so we need to handle that case
+	m.optionalStringTo("standingChargeDescription", &data.StandingChargeDescription)
 	m.to("bespoke", &data.Bespoke)
 	m.to("minimumSpend", &data.MinimumSpend)
-	m.to("minimumSpendDescription", &data.MinimumSpendDescription)
+	// this field got into a state where the state had a null value and the API returned an empty string, so we need to handle that case
+	m.optionalStringTo("minimumSpendDescription", &data.MinimumSpendDescription)
 	m.to("standingChargeBillInAdvance", &data.StandingChargeBillInAdvance)
 	m.to("minimumSpendBillInAdvance", &data.MinimumSpendBillInAdvance)
 	m.to("accountId", &data.AccountId)
